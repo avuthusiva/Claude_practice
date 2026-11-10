@@ -9,15 +9,16 @@ Provides functions to:
 - Output a formatted text report
 
 Usage:
-    python read_db.py
+    python scripts/read_db.py
 """
 
 import os
 import duckdb
 
-# Database path relative to this script
+# Database path - in data folder
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.join(BASE_DIR, "first_project", "file_insect.duckdb")
+PROJECT_ROOT = os.path.dirname(BASE_DIR)
+DB_PATH = os.path.join(PROJECT_ROOT, "data", "file_insect.duckdb")
 
 
 def get_connection():

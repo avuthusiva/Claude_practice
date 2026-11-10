@@ -236,7 +236,7 @@
         </div>
 
         <div class="btn-container">
-            <button id="uploadDbBtn" style="background-color: #ecc94b; color: #1a202c;">Upload to Database</button>
+            <button id="uploadDbBtn"><span id="uploadDbLabel">Save to Database</span></button>
             <button id="downloadBtn">Download Report</button>
             <button id="resetBtn" style="background-color: #fc8181;">Clear</button>
         </div>
@@ -263,6 +263,8 @@
     let currentFileModified = "";
     let currentFileExt = "";
     let currentFormatType = "";
+    let currentWordCount = 0;
+    let currentCharCount = 0;
 
     // Theme toggle with persistence
     const storedTheme = localStorage.getItem('themePreference');
@@ -360,6 +362,10 @@
             const words = content.trim() === "" ? 0 : content.trim().split(/\s+/).length;
             const chars = content.length;
 
+            // Store counts for database upload
+            currentWordCount = words;
+            currentCharCount = chars;
+
             // Update UI
             document.getElementById('resLines').textContent = lines.toLocaleString();
             document.getElementById('resWords').textContent = words.toLocaleString();
@@ -417,6 +423,7 @@ Permissions:   Not Available (Browser Limitation)
         return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
     }
 
+    uploadDbBtn.textContent = 'Save to Database';
     uploadDbBtn.addEventListener('click', () => {
         const payload = {
             file_name: currentFileName,
@@ -424,7 +431,9 @@ Permissions:   Not Available (Browser Limitation)
             mime_type: currentFileType,
             last_modified: currentFileModified,
             format_type: currentFormatType,
-            file_extension: currentFileExt
+            file_extension: currentFileExt,
+            word_count: currentWordCount,
+            character_count: currentCharCount
         };
 
         fetch('/upload', {

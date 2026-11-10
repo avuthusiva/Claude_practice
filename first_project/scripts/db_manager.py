@@ -7,15 +7,16 @@ Provides functions to:
 - Manage the database lifecycle
 
 Usage:
-    python db_manager.py          # creates the database and table
+    python scripts/db_manager.py          # creates the database and table
 """
 
 import os
 import duckdb
 
-# Database path relative to this script
+# Database path - in data folder
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.join(BASE_DIR, "first_project", "file_insect.duckdb")
+PROJECT_ROOT = os.path.dirname(BASE_DIR)
+DB_PATH = os.path.join(PROJECT_ROOT, "data", "file_insect.duckdb")
 
 
 def get_db_path():
@@ -23,16 +24,10 @@ def get_db_path():
     return DB_PATH
 
 
-def ensure_db_directory():
-    """Make sure the directory that will hold the database exists."""
-    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-
-
 def create_database():
     """
     Create the DuckDB database file and the file_logs table.
     """
-    ensure_db_directory()
     conn = duckdb.connect(DB_PATH)
     conn.execute("""
         CREATE TABLE IF NOT EXISTS file_logs (

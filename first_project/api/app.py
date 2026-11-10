@@ -20,12 +20,11 @@ import duckdb
 # Configuration
 # ---------------------------------------------------------------------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.join(BASE_DIR, "first_project", "file_insect.duckdb")
+PROJECT_ROOT = os.path.dirname(BASE_DIR)
+DB_PATH = os.path.join(PROJECT_ROOT, "data", "file_insect.duckdb")
+TEMPLATE_DIR = os.path.join(PROJECT_ROOT, "templates")
 
-# Ensure the database directory exists
-os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-
-app = Flask(__name__, template_folder=BASE_DIR, static_folder=BASE_DIR)
+app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=TEMPLATE_DIR)
 
 # ---------------------------------------------------------------------------
 # Database management
@@ -58,8 +57,6 @@ def insert_log(file_name, file_size, mime_type, last_modified,
                format_type, file_extension, word_count=0, character_count=0):
     """Insert a single file log row into the file_logs table."""
     conn = get_connection()
-    # DuckDB INTEGER PRIMARY KEY needs a value; auto-generate if omitted by using a sequence
-    # We'll omit the id column and let DuckDB assign the rowid implicitly
     conn.execute("""
         INSERT INTO file_logs
             (file_name, file_size, mime_type, last_modified,
@@ -73,7 +70,6 @@ def insert_log(file_name, file_size, mime_type, last_modified,
 def read_logs(limit=100):
     """Read the most recent file log entries."""
     conn = get_connection()
-    # Order by upload_timestamp instead of id
     rows = conn.execute(
         "SELECT * FROM file_logs ORDER BY upload_timestamp DESC LIMIT ?", (limit,)
     ).fetchall()
@@ -167,5 +163,6 @@ def health():
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
     print(f"DuckDB database: {DB_PATH}")
+    print(f"Templates: {TEMPLATE_DIR}")
     print("Serving index.html at http://localhost:5000")
     app.run(host="127.0.0.1", port=5000, debug=True)
