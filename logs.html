@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Inspector - Raw Logs</title>
+    <style>
+        :root {
+            --bg-color: #1a202c;
+            --text-color: #e2e8f0;
+            --container-bg: #2d3748;
+            --border-color: #4a5568;
+            --accent-color: #63b3ed;
+            --code-bg: #1a202c;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+            background-color: var(--bg-color);
+        }
+        .container {
+            background: var(--container-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+        }
+        h1 {
+            color: var(--text-color);
+            margin-top: 0;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+        .nav-links {
+            margin-bottom: 20px;
+        }
+        .nav-links a {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 600;
+            margin-right: 15px;
+        }
+        .nav-links a:hover {
+            text-decoration: underline;
+        }
+        pre {
+            background: var(--code-bg);
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            color: #68D391;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav-links">
+            <a href="/">&larr; File Inspector</a>
+            <a href="/dashboard">Dashboard</a>
+        </div>
+
+        <h1>Raw JSON Logs</h1>
+        <p>Live API response from <code>/logs</code> endpoint:</p>
+        <pre id="jsonOutput">Loading...</pre>
+    </div>
+
+    <script>
+        fetch('/logs')
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('jsonOutput').textContent = JSON.stringify(data, null, 2);
+            })
+            .catch(err => {
+                document.getElementById('jsonOutput').textContent = 'Error loading logs: ' + err;
+            });
+    </script>
+</body>
+</html>

@@ -29,11 +29,15 @@ The app is built as a single HTML file: `first_project/index.html`
 - File input: click to select or drag-and-drop.
 - Calculations: lines, words, characters.
 - Properties shown: file name, size, last modified date, MIME / file type.
+- Format support: .txt, .pdf, .html, .md, .docx (extended from original .txt/.pdf/.html).
 - OS permission bits: shown as "not available" with an explanation.
 - Output: shown on the page, and downloadable as a plain text file.
-- Download naming: the original file extension is removed and "_report" is added before ".txt".
-- Supported Formats: Only .txt, .pdf, and .html are allowed; others trigger a format error.
-- Theme: Includes a dark/light mode toggle (defaults to dark mode).
+- Download naming: the original file extension is removed and "_report" is added before ".txt" (original extension preserved in report content).
+- Supported Formats: .txt, .pdf, .html, .md, .docx; others trigger a format error.
+- Theme: Includes a dark/light mode toggle (defaults to dark mode) with persistent preference saved to localStorage.
+- Copy to clipboard: Report text can be copied to clipboard from the download modal.
+- Format badge: File type displayed as badge (e.g., "Text (.txt)", "PDF (.pdf)", "Markdown (.md)", "Word (.docx)").
+- Database upload: Enhanced payload includes format_type and file_extension fields.
 
 ## Database and Logs
 - DuckDB database created: `first_project/file_insect.duckdb`

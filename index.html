@@ -204,8 +204,8 @@
 
         <div id="dropZone" class="drop-zone">
             <p>Drop a file here or click to select</p>
-            <p style="font-size: 13px; margin-top: 8px;">Allowed formats: .txt, .pdf, .html</p>
-            <input type="file" id="fileInput" accept=".txt,.pdf,.html" style="display: none">
+            <p style="font-size: 13px; margin-top: 8px;">Allowed formats: .txt, .pdf, .html, .md, .docx</p>
+            <input type="file" id="fileInput" accept=".txt,.pdf,.html,.md,.docx" style="display: none">
         </div>
 
     <div id="results" class="results">
@@ -253,20 +253,34 @@
     const themeToggle = document.getElementById('themeToggle');
     const formatError = document.getElementById('formatError');
 
-    const ALLOWED_EXTENSIONS = ['txt', 'pdf', 'html'];
-    const ALLOWED_MIME = ['text/plain', 'application/pdf', 'text/html'];
+    const ALLOWED_EXTENSIONS = ['txt', 'pdf', 'html', 'md', 'docx'];
+    const ALLOWED_MIME = ['text/plain', 'application/pdf', 'text/html', 'text/markdown', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
 
     let currentReport = "";
     let currentFileName = "";
     let currentFileSize = 0;
     let currentFileType = "";
     let currentFileModified = "";
+    let currentFileExt = "";
+    let currentFormatType = "";
 
-    // Theme toggle
+    // Theme toggle with persistence
+    const storedTheme = localStorage.getItem('themePreference');
+    if (storedTheme === 'light') {
+        document.body.classList.add('light-theme');
+        themeToggle.textContent = 'Switch to Dark';
+    }
+
     themeToggle.addEventListener('click', () => {
-        document.body.classList.toggle('light-theme');
-        themeToggle.textContent = document.body.classList.contains('light-theme')
-            ? 'Switch to Dark' : 'Switch to Light';
+        if (document.body.classList.contains('light-theme')) {
+            document.body.classList.remove('light-theme');
+            localStorage.setItem('themePreference', 'dark');
+            themeToggle.textContent = 'Switch to Light';
+        } else {
+            document.body.classList.add('light-theme');
+            localStorage.setItem('themePreference', 'light');
+            themeToggle.textContent = 'Switch to Dark';
+        }
     });
 
     // Handle clicks
@@ -305,10 +319,21 @@
 
     function showFormatError(file) {
         const ext = file.name.split('.').pop();
-        formatError.textContent = `File format not allowed: "${file.name}" (.${ext}). Allowed formats: .txt, .pdf, .html`;
+        formatError.textContent = `File format not allowed: "${file.name}" (.${ext}). Allowed formats: .txt, .pdf, .html, .md, .docx`;
         formatError.style.display = 'block';
         results.style.display = 'none';
         fileInput.value = "";
+    }
+
+    function getFormatType(ext) {
+        const formatMap = {
+            'txt': 'Text (.txt)',
+            'pdf': 'PDF (.pdf)',
+            'html': 'HTML (.html)',
+            'md': 'Markdown (.md)',
+            'docx': 'Word (.docx)'
+        };
+        return formatMap[ext] || 'Unknown';
     }
 
     function processFile(file) {
@@ -322,7 +347,9 @@
         currentFileName = file.name;
         currentFileSize = file.size;
         currentFileType = file.type || 'Unknown';
+        currentFileExt = file.name.split('.').pop().toLowerCase();
         currentFileModified = new Date(file.lastModified).toISOString();
+        currentFormatType = getFormatType(currentFileExt);
         const reader = new FileReader();
 
         reader.onload = function(e) {
@@ -340,8 +367,14 @@
 
             document.getElementById('resName').textContent = file.name;
             document.getElementById('resSize').textContent = formatBytes(file.size);
-            document.getElementById('resType').textContent = file.type || 'Unknown';
+            document.getElementById('resType').textContent = currentFormatType;
             document.getElementById('resModified').textContent = new Date(file.lastModified).toLocaleString();
+
+            // Show format badge
+            const resTypeCell = document.querySelector('table tr:nth-child(3) td');
+            if (resTypeCell) {
+                resTypeCell.innerHTML = `<span class="badge">${currentFormatType}</span>`;
+            }
 
             results.style.display = 'block';
 
@@ -359,10 +392,13 @@ FILE PROPERTIES
 ---------------
 Name:          ${file.name}
 Size:          ${formatBytes(file.size)} (${file.size} bytes)
-Type:          ${file.type || 'Unknown'}
+Type:          ${currentFormatType}
 Last Modified: ${new Date(file.lastModified).toLocaleString()}
 Permissions:   Not Available (Browser Limitation)
 `;
+
+            // Update download button text
+            downloadBtn.textContent = `Download Report (${currentFormatType})`;
         };
 
         reader.onerror = function() {
@@ -386,7 +422,9 @@ Permissions:   Not Available (Browser Limitation)
             file_name: currentFileName,
             file_size: currentFileSize,
             mime_type: currentFileType,
-            last_modified: currentFileModified
+            last_modified: currentFileModified,
+            format_type: currentFormatType,
+            file_extension: currentFileExt
         };
 
         fetch('/upload', {
@@ -404,7 +442,7 @@ Permissions:   Not Available (Browser Limitation)
     });
 
     downloadBtn.addEventListener('click', () => {
-        // Remove the file extension, then add _report.txt
+        // Remove the file extension, then add _report.txt (keeping original extension convention)
         const baseName = currentFileName.replace(/\.[^/.]+$/, "");
         const downloadName = `${baseName}_report.txt`;
 
@@ -417,6 +455,13 @@ Permissions:   Not Available (Browser Limitation)
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
+
+        // Copy to clipboard
+        navigator.clipboard.writeText(currentReport).then(() => {
+            // Could add visual feedback here
+        }).catch(err => {
+            console.log("Clipboard copy failed:", err);
+        });
     });
 
     resetBtn.addEventListener('click', () => {
