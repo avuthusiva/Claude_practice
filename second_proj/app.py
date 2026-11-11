@@ -11,6 +11,7 @@ from flask import Flask, request, jsonify, send_file, render_template_string
 from werkzeug.utils import secure_filename
 
 try:
+    import ebooklib
     from ebooklib import epub
     from weasyprint import HTML, CSS
     from weasyprint.text.fonts import FontConfiguration
@@ -305,6 +306,7 @@ HTML_TEMPLATE = """
                     progressFill.classList.remove('indeterminate');
                     progressFill.style.width = '100%';
                     downloadBtn.classList.add('visible');
+                    downloadBtn.disabled = false;
                     downloadBtn.onclick = () => {
                         window.location.href = `/download/${result.filename}`;
                     };
@@ -361,7 +363,7 @@ def convert():
 
         # Extract content from spine
         html_parts = []
-        for item in book.get_items_of_type(epub.ITEM_DOCUMENT):
+        for item in book.get_items_of_type(ebooklib.ITEM_DOCUMENT):
             content = item.get_content().decode('utf-8')
             html_parts.append(f'<div class="chapter">{content}</div>')
 
