@@ -27,6 +27,10 @@ except ImportError as e:
     print("Please install: pip install ebooklib weasyprint")
     sys.exit(1)
 
+# Robust reader: skips manifest entries that are missing from the archive
+# (some EPUBs reference files like EPUB/toc01.html that are not present).
+from epub_reader import read_epub
+
 
 class EpubToPdfConverter:
     def __init__(self, root):
@@ -153,8 +157,8 @@ class EpubToPdfConverter:
         try:
             self.log(f"Reading EPUB: {Path(self.input_file).name}")
 
-            # Read EPUB
-            book = epub.read_epub(self.input_file)
+            # Read EPUB (tolerant of manifest entries missing from the archive)
+            book = read_epub(self.input_file)
 
             # Extract HTML content from all chapters
             html_content = []

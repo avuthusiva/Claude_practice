@@ -35,6 +35,8 @@ The application is a Flask web application with the following structure:
 second_proj/
 ├── app.py          # Flask web server (running on port 5001)
 ├── epub_to_pdf.py  # Desktop Tkinter version (requires python3-tk)
+├── epub_reader.py  # Robust EPUB reader: skips manifest entries missing
+├                         # from the archive (KeyError → minimal XHTML)
 ├── BREF.md         # Project brief
 ├── CLAUDE.md       # This file
 └── README.md       # Documentation

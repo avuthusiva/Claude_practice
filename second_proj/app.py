@@ -12,13 +12,16 @@ from werkzeug.utils import secure_filename
 
 try:
     import ebooklib
-    from ebooklib import epub
     from weasyprint import HTML, CSS
     from weasyprint.text.fonts import FontConfiguration
 except ImportError as e:
     print(f"Missing dependencies: {e}")
     print("Please install: pip install ebooklib weasyprint")
     exit(1)
+
+# Robust reader: skips manifest entries that are missing from the archive
+# (some EPUBs reference files like EPUB/toc01.html that are not present).
+from epub_reader import read_epub
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB max upload
@@ -354,8 +357,8 @@ def convert():
     output_path = os.path.join(app.config['UPLOAD_FOLDER'], output_filename)
 
     try:
-        # Read EPUB
-        book = epub.read_epub(input_path)
+        # Read EPUB (tolerant of manifest entries missing from the archive)
+        book = read_epub(input_path)
 
         # Get metadata
         title_meta = book.get_metadata('DC', 'title')
